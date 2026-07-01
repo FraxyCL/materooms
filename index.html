@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Backrooms Matemático</title>
+
+<style>
+
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+}
+
+#game{
+    width:100vw;
+    height:100vh;
+    position:relative;
+}
+
+#scene{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.arrow{
+    position:absolute;
+    width:80px;
+    cursor:pointer;
+}
+
+#up{
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+#down{
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+#left{
+    left:20px;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+#right{
+    right:20px;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+#menu {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Evita barras de scroll molestas */
+  background-color: #000; /* Fondo negro por si la pantalla es muy ancha */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#menuBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ajusta la imagen completa dentro del navegador */
+}
+
+
+
+#startButton{
+    position:absolute;
+    left:50%;
+    top:75%;
+    transform:translate(-50%,-50%);
+    width:300px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+#startButton:hover{
+    transform:translate(-50%,-50%) scale(1.05);
+}
+
+#clockObject{
+    position:absolute;
+    width:300px;
+    cursor:pointer;
+    display:none;
+    z-index:100;
+    transform:translate(-50%,-50%);
+}
+
+#timeOverlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.75);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+#timeText{
+    color:white;
+    font-size:80px;
+    font-family:monospace;
+}
+
+#gameOverScreen{
+    display:none;
+    position:absolute;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    z-index:2000;
+}
+
+#victoryScreen{
+    display:none;
+    position:absolute;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    z-index:3000;
+}
+
+#victoryScore{
+    position:absolute;
+    left:50%;
+    top:70%;
+    transform:translateX(-50%);
+    color:white;
+    font-size:42px;
+    font-weight:bold;
+    text-shadow:
+        2px 2px 8px black,
+        0 0 15px black;
+    z-index:3001;
+}
+
+#victoryBackground{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+#victoryButton{
+    position:absolute;
+    left:50%;
+    bottom:10%;
+    transform:translateX(-50%);
+    font-size:30px;
+    padding:15px 40px;
+    cursor:pointer;
+}
+
+#gameOverBackground{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+#retryButton{
+    position:absolute;
+    left:50%;
+    top:80%;
+    transform:translate(-50%,-50%);
+    width:300px;
+    cursor:pointer;
+}
+
+#retryButton:hover{
+    transform:translate(-50%,-50%) scale(1.05);
+}
+
+#safeAreaDebug{
+    position:absolute;
+    border:4px solid red;
+    pointer-events:none;
+    z-index:50;
+    display:none;
+}
+
+#chestObject{
+    position:absolute;
+    width:250px;
+    display:none;
+    cursor:pointer;
+    z-index:100;
+    transform:translate(-50%,-50%);
+}
+
+#taskOverlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:3000;
+}
+
+#taskWindow{
+    background:white;
+    padding:40px;
+    border-radius:20px;
+}
+
+#taskButtons{
+    display:flex;
+    gap:30px;
+}
+
+#taskButtons button{
+    font-size:50px;
+    cursor:pointer;
+}
+
+#messageBox{
+    position:absolute;
+    right:20px;
+    bottom:20px;
+    width:250px;
+    min-height:60px;
+    background:rgba(0,0,0,0.7);
+    color:white;
+    padding:15px;
+    font-size:20px;
+    z-index:500;
+}
+
+#scoreBox{
+    position:absolute;
+    left:20px;
+    top:20px;
+    background:rgba(0,0,0,0.7);
+    color:white;
+    padding:10px 15px;
+    font-size:24px;
+    z-index:500;
+}
+
+#hintObject{
+    position:absolute;
+    width:220px;
+    display:none;
+    cursor:pointer;
+    z-index:100;
+    transform:translate(-50%,-50%);
+}
+
+#hintOverlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.75);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:2500;
+}
+
+#hintPage{
+    max-width:90%;
+    max-height:90%;
+}
+
+#equationText{
+    font-size:32px;
+    margin-bottom:20px;
+}
+
+#solution1,
+#solution2{
+    width:150px;
+    padding:10px;
+    font-size:20px;
+}
+
+#noSolutionButton{
+    background:#cc3333;
+    color:white;
+    font-size:18px;
+    padding:10px;
+}
+
+#confirmEquationButton{
+    background:#33aa33;
+    color:white;
+    font-size:18px;
+    padding:10px;
+}
+
+.activeNoSolution{
+    box-shadow:
+        0 0 20px red;
+}
+
+#stairsObject{
+    position:absolute;
+    width:280px;
+    display:none;
+    cursor:pointer;
+    z-index:100;
+    transform:translate(-50%,-50%);
+}
+
+#exitMenuOverlay{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.7);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:4000;
+}
+
+#exitMenuWindow{
+    background:white;
+    padding:40px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    align-items:center;
+}
+
+#exitButtons{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+#exitButtons button{
+    font-size:22px;
+    padding:12px 30px;
+    cursor:pointer;
+}
+
+#fadeOverlay{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:black;
+    opacity:0;
+    pointer-events:none;
+    z-index:10000;
+    transition:opacity 2.5s linear;
+}
+
+#sanityBox{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(0,0,0,.7);
+    color:white;
+    padding:10px 15px;
+    font-size:24px;
+    z-index:500;
+}
+
+#sanityBar{
+    width:240px;
+}
+
+#victoryButtonsContainer{
+    position:absolute;
+    right:60px;
+    bottom:10%;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    align-items:flex-end;
+}
+
+#registerScoreButton{
+        font-size: 24px;
+        padding: 15px 40px;
+        cursor: pointer;
+        background: #FFD700;
+        color: black;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: 0.2s;
+}
+
+#leaderboardButtonMenu{
+        position: absolute;
+        right: 65px;
+        top: 85%;
+        font-size: 18px;
+        padding: 12px 30px;
+        cursor: pointer;
+        background: rgba(100, 150, 255, 0.9);
+        color: white;
+        border: 2px solid white;
+        border-radius: 8px;
+}
+
+#glitchOverlay{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    opacity:0;
+    z-index:9999;
+    background:
+        url("imagenes/noise.png");
+    mix-blend-mode:screen;
+}
+
+</style>
+</head>
+<body>
+
+<div id="menu">
+    <!-- FONDO DEL MENÚ -->
+    <img id="menuBackground" src="imagenes/menu.jpg">
+    <!-- BOTÓN COMENZAR -->
+    <img id="startButton" src="ui/boton_inicio.png">
+    <!-- BOTÓN MOSTRAR RANKING -->
+    <button id="leaderboardButtonMenu">
+        🏆 Ver Ranking 🏆
+    </button>
+</div>
+
+<div id="gameOverScreen">
+    <!-- Fondo de derrota -->
+    <img id="gameOverBackground"
+         src="imagenes/gameover.jpg">
+    <!-- Botón reintentar -->
+    <img id="retryButton"
+         src="ui/reintentar.png">
+</div>
+
+<div id="victoryScreen">
+    <img
+        id="victoryBackground"
+        src="imagenes/ganaste.jpg">
+        <div id="victoryScore">
+            Puntaje final: 0
+        </div>
+    
+    <!-- CONTENEDOR PARA LOS BOTONES -->
+    <!-- Botón a la derecha -->
+    <div id="victoryButtonsContainer">
+        <button id="registerScoreButton">
+            📝 Registrar Puntaje
+        </button>
+    </div>
+    <!-- Botón centrado -->
+    <button id="victoryButton">
+        Volver al menú
+    </button>
+    </div>
+<div id="game" style="display:none;">
+    <div id="scoreBox">
+    Puntaje: 0
+    </div>
+    <div id="sanityBox">
+    <span>Cordura:</span>
+    <img
+        id="sanityBar"
+        src="ui/cordura5.png">
+</div>
+<div id="messageBox"></div>
+<div id="safeAreaDebug"></div>
+<img id="chestObject">
+<img id="clockObject">
+<img id="hintObject">
+<img id="scene">
+<img id="up" class="arrow" src="ui/flecha_arriba.png">
+<img id="down" class="arrow" src="ui/flecha_abajo.png">
+<img id="left" class="arrow" src="ui/flecha_izquierda.png">
+<img id="right" class="arrow" src="ui/flecha_derecha.png">
+<img id="stairsObject">
+</div>
+<div id="hintOverlay">
+    <img id="hintPage">
+</div>
+<div id="timeOverlay">
+    <div id="timeText">
+        01:00
+    </div>
+</div>
+
+<div id="taskOverlay">
+    <div id="taskWindow">
+        <h2 id="difficultyText">
+            Ecuación dificultad 1
+        </h2>
+        <div id="equationText"></div>
+        <br>
+        <input id="solution1" type="text" placeholder="Solución 1">
+        <input id="solution2" type="text" placeholder="Solución 2">
+        <br><br>
+        <button id="noSolutionButton">
+            Sin solución
+        </button>
+        <button id="confirmEquationButton">
+            Confirmar
+        </button>
+    </div>
+</div>
+
+<div id="exitMenuOverlay">
+    <div id="exitMenuWindow">
+        <h2>Escalera</h2>
+        <div id="exitButtons">
+            <button id="nextLevelButton">
+                Avanzar nivel
+            </button>
+            <button id="escapeButton">
+                Escapar de Backrooms
+            </button>
+            <button id="continueButton">
+                Seguir explorando
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="fadeOverlay"></div>
+
+<!-- MODAL PARA REGISTRAR PUNTAJE -->
+<div id="registerScoreOverlay" style="
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+">
+    <div id="registerScoreWindow" style="
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    ">
+        <h2 style="margin-top: 0; color: #333;">🏆 Registrar Puntaje 🏆</h2>
+        <p style="color: #666; font-size: 18px;">
+            ¡Excelente juego! Tu puntaje es: <strong id="finalScoreDisplay">0</strong>
+        </p>
+        <input 
+            id="playerNameInput" 
+            type="text" 
+            placeholder="Tu nombre (máx 10 caracteres)" 
+            maxlength="10"
+            style="
+                width: 100%;
+                padding: 12px;
+                font-size: 16px;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                box-sizing: border-box;
+                margin: 20px 0;
+            "
+        >
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="submitScoreButton" style="
+                flex: 1;
+                padding: 12px;
+                font-size: 16px;
+                cursor: pointer;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+            ">
+                Guardar
+            </button>
+            <button id="cancelRegisterButton" style="
+                flex: 1;
+                padding: 12px;
+                font-size: 16px;
+                cursor: pointer;
+                background: #999;
+                color: white;
+                border: none;
+                border-radius: 8px;
+            ">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA VER LEADERBOARD -->
+<div id="leaderboardOverlay" style="
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+">
+    <div id="leaderboardWindow" style="
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    ">
+        <h2 style="text-align: center; margin-top: 0; color: #333;">
+            🏆 RANKING 🏆
+        </h2>
+        <div id="leaderboardContent" style="
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        "></div>
+        <button id="closeLeaderboardButton" style="
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        ">
+            Cerrar
+        </button>
+    </div>
+</div>
+<div id="glitchOverlay"></div>
+<script>
+
+//supa base
+const SUPABASE_URL = "https://tfmbfqfdkqbjtevegjrw.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmbWJmcWZka3FianRldmVnanJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMjMyNTEsImV4cCI6MjA5MDg5OTI1MX0.gJ_8I76vEtWDFbENnMc6MxJQak3eDym9e3LBlFYi514"
+
+// Función para guardar puntaje en Supabase
+async function saveScoreToLeaderboard(nombre, puntaje) {
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/leaderboard`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    puntaje: puntaje
+                })
+            }
+        );
+        if (response.ok) {
+            return { success: true, message: "¡Puntaje guardado!" };
+        } else {
+            return { success: false, message: "Error al guardar el puntaje" };
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        return { success: false, message: "Error de conexión" };
+    }
+}
+
+// Función para obtener el leaderboard
+async function fetchLeaderboard() {
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/leaderboard?order=puntaje.desc`,
+            {
+                method: 'GET',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            }
+        );
+
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        } else {
+            console.error("Error al obtener leaderboard");
+            return [];
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        return [];
+    }
+}
+//ECUACIONES
+const equationsDifficulty1 = `
+1|x^2=25|5,-5
+2|3x^2-75=0|-5,5
+3|9x^2=144|4,-4
+4|(x+3)^2=16|1,-7
+5|-49=x^2-14x|7,7
+6|x^2-9=0|3,-3
+7|x^2+x=12|-4,3
+8|x^2+2x+1=0|-1,-1
+9|x^2=8x|0,8
+10|x^2-5x+6=0|2,3
+11|x^2=-1|NONE
+12|x^2=0|0,0
+13|x^2=36|6,-6
+14|2x^2-18=0|-3,3
+15|4x^2=100|5,-5
+16|(x-4)^2=9|7,1
+17|-64=x^2-16x|8,8
+18|x^2-49=0|7,-7
+19|x^2=-16|NONE
+20|x^2+6x+9=0|-3,-3
+21|x^2=5x|0,5
+22|x^2-7x+12=0|3,4
+23|x^2=-4|NONE
+24|3x^2=0|0,0
+25|(x+5)^2=36|1,-11
+26|5x^2-80=0|-4,4
+27|x^2-x=6|-2,3
+28|x^2-10x+25=0|5,5
+29|x^2=-9|NONE
+30|x^2+4x=0|0,-4
+31|x^2-3x-10=0|-2,5
+32|(x-2)^2=0|2,2
+`;
+const equationsDifficulty2 = `
+1|x^2-12x+35=0|5,7
+2|2x^2-18=0|3,-3
+3|x^2+2x=15|-5,3
+4|5x^2+7x-6=0|3/5,-2
+5|3x^2-5x-2=0|2,-1/3
+6|4x^2-9=0|3/2,-3/2
+7|2x^2+5x-3=0|1/2,-3
+8|6x^2-x-2=0|2/3,-1/2
+9|x^2-3x-10=0|5,-2
+10|4x^2-12x+9=0|3/2,3/2
+11|3x^2+10x+3=0|-1/3,-3
+12|8x^2-2x-3=0|3/4,-1/2
+13|5x^2-13x-6=0|3,-2/5
+14|2x^2-7x+3=0|3,1/2
+`;
+const equationsDifficulty3 = `
+1|(3x-2)(x+1)-(2x-3)(x-3) = x^2+14x-13|1/2,1/2
+2|3x^2-10x-8=0|4,-2/3
+3|(x+3)(2x-1)-(x+2)(x-2)=-x^2-1|-1/2,-2
+4|x(x^2-7x+2)=5x+x^3|-3/7,0
+5|(x-2)(x+2)=4(2x-1)+3x|11,0
+6|(x+2)(2x+1)-(x-1)(x-2)=0|0,-8
+7|(2x+1)(x-2)-(x-1)(x+3)=-6x+7|2,-3
+8|(3x-1)(x+2)-2(x-2)(x+1)=-2x^2+17x+10|4,-2/3
+9|(x+4)(2x-1)-(x-2)(x+5)=-x^2+13x+11|5,-1/2
+10|(3x+2)(x-1)-2(x+1)(x-2)=14|3,-4
+11|(2x-3)(x+4)-(x-1)(x+5)=6x+7|7,-2
+`;
+//MAPAS
+const level1String = `
+XnBn0XnBn0XnBc0
+B09S-T08n--07nB
+2n|nX1n|tX1n|nX
+Xn|n0Xn|n0Xn|n0
+B06n--05n--04nB
+1p|nX3p|nX1p|nX
+Xr|n0Xn|n0Xn|c0
+B03n--02n--01nB
+1nBnX1pBnI2nBnX
+`;
+const level2String = `
+XnBc1XnBn1XnBn1
+B06n--05S--04nB
+2n|nX2n|nX2p|nX
+Xn|n1Xn|c1Xr|n1
+B03n--02n--01nB
+1pBnX1nBnX1nBnI
+`;
+const level3String = `
+XnBc2XnBc2
+B08n--07nB
+3n|nX3n|nX
+Xn|c2Xn|n2
+B06nBB05nB
+2n|nX2p|nX
+Xn|n2Xr|n2
+B04n--03nB
+2p|nX2n|nX
+Xn|c2Xn|n2
+B02n--01SB
+1nBnI1nBnX
+`;
+const level4String = `
+XnBc3XnBn3XrBn3XnBc3XnBc3
+B30n--29S--28n--27nBB31nB
+3n|nX3nBnX1n|nX1nBnX1nBnX
+Xn|c3XnBn3Xn|c3XnBc3XnBc3
+B26nBB31nBB25nBB31nBB31nB
+2n|nX1pBnX2n|nX1pBnX1pBnX
+Xn|c3XnBn3XnTn3XnBc3XnBc3
+B24n-T23n--22nBB31nBB31nB
+1nBnX2n|tX2n|tX1pBnX1pBnX
+XnBn3Xr|n3Xn|n3XnBc3XnBc3
+B31nBB21n--20n--19nBB31nB
+2nBnX1n|tX1p|nX2nBnX1pBnX
+XnBn3Xn|n3Xn|n3XnBn3XnBc3
+B31nBB18n--17n--16n--15nB
+2pBnX2p|nX2p|nX2p|nX2nBnX
+XnBc3Xn|c3Xr|n3Xn|n3XnBc3
+B31nBB14nBB13n--12nBB31nB
+1nBnX2n|nX1n|nX1p|nX1pBnX
+XnBn3Xn|c3Xn|c3Xn|n3XnBc3
+B31nBB11nBB10n--09nBB31nB
+2nBnX2n|nX1n|nX1p|nX1pBnX
+XnBn3Xn|c3Xn|n3Xn|c3XrBn3
+B31nBB08nBB07n--06n--05nB
+1pBnX2n|nX1p|nX1nBnX1n|nX
+XnBc3Xn|n3Xn|n3XnBn3Xn|n3
+B31nBB04n--03n--01n--02nB
+1nBnX2pBnX2pBnX2pBnI2pBnX
+`;
+//constantes
+const lastLevel = 4;
+const timeIncreasePerLevel = 10;
+// comienza del 1 hacia adelante comenzar
+const startingLevel = 2;
+let currentLevel = startingLevel;
+const useQuadraticEquations = true;
+//tiempo
+const startTime = 60;
+//cofres logo y reloj logo
+const totalChestImages = 2;
+const totalClockImages = 4;
+//pistas papiro chico pista logo objetos
+const totalHintImages = 3;
+//texto pista grande pistas
+const totalHintPages = 45;
+const showSafeArea = false;
+// CORDURA
+const maxSanity = 5;
+// Cuánta cordura se recupera al pasar de nivel. Si vale 0, no se recupera nada.
+const sanityRecoveryPerLevel = 0;
+// AUDIO SONIDOS DE ERROR Cantidad de sonidos disponibles por nivel de cordura.
+const totalErrorSounds5 = 3;
+const totalErrorSounds4 = 3;
+const totalErrorSounds3 = 4;
+const totalErrorSounds2 = 5;
+// GAME OVER - Cantidad de pantallas disponibles por nivel
+const totalGameOverImages1 = 2;
+const totalGameOverImages2 = 3;
+const totalGameOverImages3 = 2;
+const totalGameOverImages4 = 2;
+//agregar musica
+const music={
+    menu:new Audio("audio/musica/menu.mp3"),
+    level0:new Audio("audio/musica/nivel0.mp3"),
+    level1:new Audio("audio/musica/nivel1.mp3"),
+    level2:new Audio("audio/musica/nivel2.mp3"),
+    level3:new Audio("audio/musica/nivel3.mp3"),
+    victory:new Audio("audio/musica/victoria.mp3")
+};
+const heartbeatMusic = new Audio("audio/musica/heartbeat.mp3");
+heartbeatMusic.loop = true;
+heartbeatMusic.volume = 1;
+Object.values(music).forEach(track=>{
+    track.loop=true;
+    track.volume=0.5;
+});
+
+const sfx={
+    unlock:new Audio("audio/sfx/candado.mp3"),
+    chestOpen:new Audio("audio/sfx/abrir_cofre.mp3"),
+    chestClose:new Audio("audio/sfx/cerrar_cofre.mp3"),
+    clock:new Audio("audio/sfx/reloj.mp3"),
+    gameOver:new Audio("audio/sfx/gameover.mp3"),
+    stairs:new Audio("audio/sfx/escalera.mp3"),
+    hint:new Audio("audio/sfx/pista.mp3"),
+    footsteps:new Audio("audio/sfx/pasos.mp3"),
+    glitch:new Audio("audio/sfx/glitch.mp3"),
+};
+sfx.clock.loop=true;
+Object.values(sfx).forEach(sound=>{
+    sound.volume=0.7;
+});
+
+let currentMusic=null;
+let currentErrorSound = null;
+let heartbeatStarted = false;
+let glitchInterval = null;
+//salida escalera posicion
+const stairsPositions={
+    1:{x:60,y:52,width:260
+    },
+    2:{x:80,y:48,width:100
+    },
+    3:{x:65,y:50,width:260
+    },
+    4:{x:92,y:25,width:100
+    }
+};
+
+const safeArea = {
+    left:20,
+    top:45,
+    width:60,
+    height:10
+};
+
+let activeEquationRoom = null;
+let activeEquationType = null;
+let activeEquationData = null;
+let equationSuccessCallback = null;
+let equationFailCallback = null;
+let remainingTime = startTime;
+let timerInterval = null;
+let rooms = {};
+let currentRoom = null;
+let mapWidth = 0;
+let mapHeight = 0;
+let activeChest = null;
+let noSolutionSelected = false;
+let score = 0;
+let sanity = maxSanity;
+const scene = document.getElementById("scene");
+const equationPools = {
+    1: parseEquationPool(equationsDifficulty1
+    ),
+    2: parseEquationPool(equationsDifficulty2
+    ),
+    3: parseEquationPool(equationsDifficulty3
+    )
+};
+
+function parseLevel(levelText){
+    rooms = {};
+    const lines = levelText.trim().split("\n");
+    const totalRows = lines.length;
+    const totalCols = lines[0].length;
+    mapWidth = totalCols / 5;
+    mapHeight = totalRows / 3;
+
+    for(let roomRow=0; roomRow<mapHeight; roomRow++){
+        for(let roomCol=0; roomCol<mapWidth; roomCol++){
+            const r1 = lines[roomRow * 3]?.substr(roomCol * 5, 5);
+            const r2 = lines[roomRow * 3 + 1]?.substr(roomCol * 5, 5);
+            const r3 = lines[roomRow * 3 + 2]?.substr(roomCol * 5, 5);
+            const roomId = r2[1] + r2[2];
+            rooms[roomId] = {
+                roomId: roomId,
+                level: r1[4],
+                row: roomRow,
+                col: roomCol,
+                clockImage:
+                    r1[1] === "r"
+                        ? Math.floor(Math.random() * totalClockImages) + 1
+                        : null,
+                objectPosition:
+                    r1[1] === "r"
+                        ? getRandomPositionInSafeArea()
+                        : null,
+                north:
+                    r1[2] == "T"
+                        ? "|"
+                        : r1[2],
+                left:
+                    r2[0] == "T"
+                        ? "-"
+                        : r2[0],
+                right:
+                    r2[4] == "T"
+                        ? "-"
+                        : r2[4],
+                south:
+                    r3[2] == "T"
+                        ? "|"
+                        : r3[2],
+                hasClock:
+                    r1[1] === "r",
+                hasChest:
+                    r1[3] === "c",
+                equationData:null,
+                chestImage:
+                    r1[3] === "c"
+                        ? Math.floor(Math.random() * totalChestImages) + 1
+                        : null,
+                chestPosition:
+                    r1[3] === "c"
+                        ? getRandomPositionInSafeArea()
+                        : null,
+                chestCompleted: false,
+                hasExit:
+                    r2[3] === "S",
+                    exitUnlocked: false,
+                    exitEquationData: null,
+                difficulty:
+                    r3[0],
+                hasHint:
+                    r3[1] === "p",
+                hintImage:
+                    r3[1] === "p"
+                        ? Math.floor(Math.random() * totalHintImages) + 1
+                        : null,
+                hintPage:
+                    r3[1] === "p"
+                        ? Math.floor(Math.random() * totalHintPages) + 1
+                        : null,
+                hintPosition:
+                    r3[1] === "p"
+                        ? getRandomPositionInSafeArea()
+                        : null,
+                hasTransition:
+                    r3[3] === "t",
+                transitionUnlocked: false,
+                transitionEquationData: null,
+                transitionDirection:
+                    r1[2] == "T" ? "up" :
+                    r2[0] == "T" ? "left" :
+                    r2[4] == "T" ? "right" :
+                    r3[2] == "T" ? "down" :
+                    null,
+                isStart: r3[4] === "I"
+            };
+            if (
+                rooms[roomId].hasChest
+            ) {
+                const pool = equationPools[rooms[roomId].difficulty
+                    ];
+                const randomEquation = pool[Math.floor(Math.random() * pool.length
+                    )
+                    ];
+                rooms[roomId].equationData = structuredClone(randomEquation
+                    );
+            }
+            if (
+                rooms[roomId].hasExit
+            ) {
+                const pool =equationPools[rooms[roomId].difficulty
+                    ];
+                const randomEquation = pool[Math.floor(Math.random() * pool.length
+                    )
+                    ];
+                rooms[roomId].exitEquationData = structuredClone(randomEquation
+                    );
+            }
+            if (
+                rooms[roomId].hasTransition
+            ) {
+                const pool =equationPools[rooms[roomId].difficulty
+                    ];
+                const randomEquation = pool[Math.floor(Math.random() * pool.length
+                    )
+                    ];
+                rooms[roomId].transitionEquationData = structuredClone(randomEquation
+                    );
+            }
+        }
+    }
+}
+
+function parseEquationPool(text){
+    return text.trim().split("\n").map(line=>{
+            const parts = line.split("|");
+            return{
+                id:parts[0],
+                equation:parts[1],
+                solutions:parts[2]
+            };
+        });
+}
+
+function findStartRoom(){
+    for(const roomId in rooms){
+        if(rooms[roomId].isStart){
+            return roomId;
+        }
+    }
+    return Object.keys(rooms)[0];
+}
+
+function getNeighbor(roomId,direction){
+    const room = rooms[roomId];
+    let targetRow = room.row;
+    let targetCol = room.col;
+    if(direction === "up")
+        targetRow--;
+    if(direction === "down")
+        targetRow++;
+    if(direction === "left")
+        targetCol--;
+    if(direction === "right")
+        targetCol++;
+    for(const id in rooms){
+        const candidate = rooms[id];
+        if(
+            candidate.row === targetRow && candidate.col === targetCol
+        ){
+            return id;
+        }
+    }
+    return null;
+}
+
+function loadRoomImage(roomId){
+    const room = rooms[roomId];
+    scene.src = `imagenes/nivel${room.level}habitacion${room.roomId}.webp`;
+}
+
+function move(direction){
+    const room =
+        rooms[currentRoom];
+    let allowed = false;
+    if(
+        direction === "up" && room.north === "|"
+    ){
+        allowed = true;
+    }
+    if(
+        direction === "down" && room.south === "|"
+    ){
+        allowed = true;
+    }
+    if(
+        direction === "left" && room.left === "-"
+    ){
+        allowed = true;
+    }
+    if(
+        direction === "right" && room.right === "-"
+    ){
+        allowed = true;
+    }
+    if (
+        room.hasTransition && !room.transitionUnlocked && room.transitionDirection == direction
+    ) {
+        showMessage("La puerta está bloqueada."
+        );
+        return;
+    }
+    if(!allowed)
+        return;
+    const destination = getNeighbor(currentRoom,direction
+        );
+    if(destination === null)
+        return;
+    playSound(sfx.footsteps);
+    currentRoom = destination;
+    document.getElementById("messageBox").textContent = "";
+    loadRoomImage(currentRoom);
+    updateArrows();
+}
+
+function updateArrows(){
+    const room =
+        rooms[currentRoom];
+    document.getElementById("up").style.display = room.north === "|" ? "block" : "none";
+    document.getElementById("down").style.display = room.south === "|" ? "block" : "none";
+    document.getElementById("left").style.display = room.left === "-" ? "block" : "none";
+    document.getElementById("right").style.display = room.right === "-" ? "block" : "none";
+
+    // Restaurar todas las flechas normales
+    document.getElementById("up").src = "ui/flecha_arriba.png";
+    document.getElementById("down").src = "ui/flecha_abajo.png";
+    document.getElementById("left").src = "ui/flecha_izquierda.png";
+    document.getElementById("right").src = "ui/flecha_derecha.png";
+
+    // Si existe una transición bloqueada reemplazar únicamente esa flecha
+    if (room.hasTransition && !room.transitionUnlocked && room.transitionDirection
+    ) {
+        document.getElementById(room.transitionDirection).src = "objetos/candado.png";
+    }
+    const clockObject = document.getElementById("clockObject");
+
+    if (room.hasClock) {
+        clockObject.style.display = "block";
+        clockObject.src = `objetos/reloj${room.clockImage}.png`;
+        clockObject.style.left = room.objectPosition.x + "%";
+        clockObject.style.top = room.objectPosition.y + "%";
+        clockObject.style.bottom ="auto";
+    }
+    else {clockObject.style.display = "none";
+    }
+    const chestObject = document.getElementById("chestObject");
+    if (room.hasChest && !room.chestCompleted
+    ) {
+        chestObject.style.display = "block";
+        chestObject.src = `objetos/cofre${room.chestImage}.png`;
+        chestObject.style.left = room.chestPosition.x + "%";
+        chestObject.style.top = room.chestPosition.y + "%";
+    }
+    else {
+        chestObject.style.display = "none";
+    }
+    const hintObject =
+        document.getElementById("hintObject");
+    if (room.hasHint) {
+        hintObject.style.display = "block";
+        hintObject.src = `objetos/pista${room.hintImage}.png`;
+        hintObject.style.left = room.hintPosition.x + "%";
+        hintObject.style.top = room.hintPosition.y + "%";
+    }
+    else {
+        hintObject.style.display = "none";
+    }
+    const stairsObject = document.getElementById("stairsObject"
+        );
+    if (room.hasExit) {
+        stairsObject.style.display = "block";
+        stairsObject.src = `objetos/escalera${currentLevel}.png`;
+        stairsObject.style.left = stairsPositions[currentLevel].x + "%";
+        stairsObject.style.top = stairsPositions[currentLevel].y + "%";
+        stairsObject.style.width = stairsPositions[currentLevel].width + "px";
+    }
+    else {stairsObject.style.display = "none";
+    }
+}
+
+function startGame(){
+    parseLevel(
+    getCurrentLevelString());
+    currentRoom = findStartRoom();
+    remainingTime = startTime + (currentLevel - 1) * timeIncreasePerLevel;
+    score = 0;
+    updateScoreDisplay();
+    sanity = maxSanity;
+    updateSanityDisplay();
+    updateClockDisplay();
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("game").style.display = "block";
+
+    //agregar musica
+    switch (currentLevel) {
+        case 1:
+            playMusic(music.level0);
+            break;
+        case 2:
+            playMusic(music.level1);
+            break;
+        case 3:
+            playMusic(music.level2);
+            break;
+        case 4:
+            playMusic(music.level3);
+            break;
+    }
+    loadRoomImage(currentRoom);
+    updateArrows();
+    updateSafeAreaDebug();
+    heartbeatStarted = false;
+    stopGlitching();
+    startTimer();
+}
+
+function startTimer(){
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if(remainingTime > 0){
+            remainingTime--;
+            updateClockDisplay();
+            // Cuando quedan 30 segundos
+            if(
+                remainingTime <= 30 &&
+                !heartbeatStarted
+            ){
+                heartbeatStarted = true;
+                stopMusic();
+                heartbeatMusic.currentTime = 0;
+                heartbeatMusic.play();
+            }
+        }
+        if(remainingTime <= 0){
+            gameOver();
+        }
+    },1000);
+}
+
+function formatTime(seconds){
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return (
+        String(minutes).padStart(2,"0")
+        + ":"
+        + String(secs).padStart(2,"0")
+    );
+}
+
+function updateClockDisplay(){
+    document.getElementById("timeText").textContent = formatTime(remainingTime);
+}
+
+function gameOver(){
+    clearInterval(timerInterval);
+    stopMusic();
+    heartbeatMusic.pause();
+    heartbeatMusic.currentTime = 0;
+    heartbeatStarted = false;
+    playSound(sfx.gameOver);
+    stopSound(sfx.clock);
+    if (currentErrorSound) {
+        currentErrorSound.pause();
+        currentErrorSound.currentTime = 0;
+        currentErrorSound = null;
+    }
+    document.getElementById("timeOverlay").style.display = "none";
+    document.getElementById("taskOverlay").style.display = "none";
+    document.getElementById("hintOverlay").style.display = "none";
+    document.getElementById("exitMenuOverlay").style.display = "none";
+    activeChest = null;
+    document.getElementById("game").style.display = "none";
+    document.getElementById("gameOverBackground").src = getRandomGameOverImage();
+    document.getElementById("gameOverScreen").style.display = "block";
+}
+
+function victory(){
+    clearInterval(timerInterval);
+    heartbeatMusic.pause();
+    heartbeatMusic.currentTime = 0;
+    heartbeatStarted = false;
+    playMusic(music.victory);
+    document.getElementById("exitMenuOverlay").style.display = "none";
+    document.getElementById("taskOverlay").style.display = "none";
+    document.getElementById("hintOverlay").style.display = "none";
+    document.getElementById("timeOverlay").style.display = "none";
+    document.getElementById("victoryScore").textContent = "Puntaje final: " + score;
+    document.getElementById("game").style.display = "none";
+    document.getElementById("victoryScreen").style.display = "block";
+}
+
+function loadLevel(level){
+    // Actualizar currentLevel PRIMERO
+    currentLevel = level;
+    // LUEGO parsear con el nivel correcto
+    parseLevel(
+        getCurrentLevelString()
+    );
+    currentRoom = findStartRoom();
+    remainingTime = startTime + (currentLevel-1) * timeIncreasePerLevel;
+    updateClockDisplay();
+    loadRoomImage(currentRoom);
+    updateArrows();
+    updateSafeAreaDebug();
+    heartbeatStarted = false;
+    heartbeatMusic.pause();
+    heartbeatMusic.currentTime = 0;
+    heartbeatStarted = false;
+    
+    // Cambiar música según el nivel
+    switch (currentLevel) {
+        case 1:
+            playMusic(music.level0);
+            break;
+        case 2:
+            playMusic(music.level1);
+            break;
+        case 3:
+            playMusic(music.level2);
+            break;
+        case 4:
+            playMusic(music.level3);
+            break;
+    }
+}
+
+function updateSafeAreaDebug(){
+    const box = document.getElementById("safeAreaDebug");
+    if(!showSafeArea){
+        box.style.display = "none";
+        return;
+    }
+    box.style.display = "block";
+    box.style.left = safeArea.left + "%";
+    box.style.top = safeArea.top + "%";
+    box.style.width = safeArea.width + "%";
+    box.style.height = safeArea.height + "%";
+}
+
+function getRandomPositionInSafeArea(){
+    return {
+        x:safeArea.left +Math.random() *safeArea.width,
+        y:safeArea.top +Math.random() *safeArea.height
+    };
+}
+
+function showMessage(text){
+    document.getElementById("messageBox").textContent = text;
+}
+
+function updateScoreDisplay(){
+    document.getElementById("scoreBox").textContent ="Puntaje: " + score;
+}
+
+function updateSanityDisplay(){
+    document.getElementById("sanityBar").src ="ui/cordura" +sanity +".png";
+}
+
+function loseSanity(amount=1){
+    sanity -= amount;
+    if(sanity < 0){
+        sanity = 0;
+    }
+    updateSanityDisplay();
+    if (sanity == 1) {
+        startGlitching();
+    }
+    if (sanity == 0) {
+        stopGlitching();
+        gameOver();
+    }
+}
+function recoverSanity(amount){sanity += amount;
+    if(sanity > maxSanity){sanity = maxSanity;}
+    updateSanityDisplay();
+}
+
+function getPoints(difficulty,multiplier=1){
+    const table={1:1000, 2:3000, 3:8000};
+    return table[difficulty]*multiplier;
+}
+
+function addScore(difficulty,multiplier=1){
+    score += getPoints(difficulty,multiplier);
+    updateScoreDisplay();
+}
+
+function renderEquation(text){
+    return text.replace(
+        /\^(\d+)/g,
+        "<sup>$1</sup>"
+    );
+}
+
+function openEquation(roomId,type,onSuccess,onFail){
+    activeEquationRoom = roomId;
+    activeEquationType = type;
+    equationSuccessCallback = onSuccess;
+    equationFailCallback = onFail;
+    const room = rooms[roomId];
+    let equationData;
+    switch(type){
+        case "chest":
+            equationData = room.equationData;
+            break;
+        case "exit":
+            equationData = room.exitEquationData;
+            break;
+        case "transition":
+            equationData = room.transitionEquationData;
+            break;
+    }
+    activeEquationData = equationData;
+    if (type == "exit") {
+        document.getElementById("difficultyText").textContent ="Desbloquear salida (Dificultad "+ room.difficulty + ")";
+    }
+    else if (type == "transition") {
+        document.getElementById("difficultyText").textContent ="Desbloquear paso (Dificultad "+ room.difficulty + ")";
+    }
+    else {
+        document.getElementById("difficultyText").textContent ="Ecuación dificultad "+ room.difficulty;
+    }
+    document.getElementById("equationText").innerHTML = renderEquation(equationData.equation);
+    document.getElementById("solution1").value="";
+    document.getElementById("solution2").value="";
+    document.getElementById("solution1").disabled=false;
+    document.getElementById("solution2").disabled=false;
+    noSolutionSelected=false;
+    document.getElementById("noSolutionButton").classList.remove("activeNoSolution");
+    document.getElementById("taskOverlay").style.display="flex";
+}
+function normalizeSolution(value){
+    return value.trim().replace(/\s/g,"");
+}
+
+function checkEquationAnswer(){
+    const solutionString = activeEquationData.solutions;
+    if(solutionString==="NONE"){return noSolutionSelected;}
+    if(noSolutionSelected)
+        return false;
+    const realSolutions = solutionString.split(",");
+    const a = normalizeSolution(document.getElementById("solution1").value
+        );
+    const b = normalizeSolution(document.getElementById("solution2").value
+        );
+    const s1 = normalizeSolution(realSolutions[0]
+        );
+    const s2 = normalizeSolution(realSolutions[1]
+        );
+    if(s1===s2){
+        return(
+            a===s1 || b===s1
+        );
+    }
+    return(
+        (a===s1 && b===s2) || (a===s2 && b===s1)
+    );
+}
+
+function showExitMenu(){
+    const overlay =
+        document.getElementById(
+            "exitMenuOverlay"
+        );
+    const next =
+        document.getElementById(
+            "nextLevelButton"
+        );
+    const escape =
+        document.getElementById(
+            "escapeButton"
+        );
+    if(currentLevel==startingLevel){
+        next.style.display="block";
+        escape.style.display="none";
+    }
+    else if(currentLevel<lastLevel){
+        next.style.display="block";
+        escape.style.display="block";
+    }
+    else{
+        next.style.display="none";
+        escape.style.display="block";
+    }
+    overlay.style.display="flex";
+}
+
+//agregar nivel mapa
+function getCurrentLevelString(){
+    switch(currentLevel){
+        case 1:
+            return level1String;
+        case 2:
+            return level2String;
+        case 3:
+            return level3String;
+        case 4:
+            return level4String;
+    }
+}
+
+function tryMove(direction){
+    const room = rooms[currentRoom];
+    if(
+        room.hasTransition && !room.transitionUnlocked && room.transitionDirection==direction
+    ){
+        openEquation(
+            currentRoom,
+            "transition",
+            function () {
+                playSound(sfx.unlock);
+                room.transitionUnlocked = true;
+                addScore(Number(room.difficulty),1
+                );
+                showMessage("Paso desbloqueado."
+                );
+                updateArrows();
+            },
+            function(){
+                showMessage("Respuesta incorrecta."
+                );
+            }
+        );
+        return;
+    }
+    move(direction);
+}
+
+function playMusic(track){
+    if(currentMusic){
+        currentMusic.pause();
+        currentMusic.currentTime=0;
+    }
+    currentMusic=track;
+    currentMusic.play();
+}
+
+function stopMusic(){
+    if(currentMusic){
+        currentMusic.pause();
+        currentMusic.currentTime=0;
+        currentMusic=null;
+    }
+}
+
+function playSound(sound){
+    sound.currentTime=0;
+    sound.play();
+}
+
+function playRandomErrorSound(){
+    // Con cordura 1 el siguiente error produce Game Over, por lo que no se reproduce ningún sonido.
+    if(sanity <= 1)
+        return;
+
+    let totalSounds = 0;
+    switch(sanity){
+        case 5:
+            totalSounds = totalErrorSounds5;
+            break;
+        case 4:
+            totalSounds = totalErrorSounds4;
+            break;
+        case 3:
+            totalSounds = totalErrorSounds3;
+            break;
+        case 2:
+            totalSounds = totalErrorSounds2;
+            break;
+        default:
+            return;
+    }
+    const randomSound =
+        Math.floor(Math.random() * totalSounds) + 1;
+    // Si todavía estaba sonando uno anterior, detenerlo
+    if (currentErrorSound) {
+        currentErrorSound.pause();
+        currentErrorSound.currentTime = 0;
+    }
+    currentErrorSound = new Audio(
+        `audio/sfx/error${sanity}-${randomSound}.mp3`
+    );
+    //volumen errores
+    currentErrorSound.volume = 0.7;
+    currentErrorSound.play();
+}
+
+function getRandomGameOverImage(){
+    let totalImages = 1;
+    switch(currentLevel){
+        case 1:
+            totalImages = totalGameOverImages1;
+            break;
+        case 2:
+            totalImages = totalGameOverImages2;
+            break;
+        case 3:
+            totalImages = totalGameOverImages3;
+            break;
+        case 4:
+            totalImages = totalGameOverImages4;
+            break;
+    }
+    const randomImage = Math.floor(Math.random() * totalImages) + 1;
+    return `imagenes/gameover${currentLevel}-${randomImage}.jpg`;
+}
+
+function stopSound(sound){
+    sound.pause();
+    sound.currentTime=0;
+}
+
+function returnToMenu(){
+    clearInterval(timerInterval);
+    stopMusic();
+    stopGlitching();
+    heartbeatMusic.pause();
+    heartbeatMusic.currentTime = 0;
+    heartbeatStarted = false;
+    stopSound(sfx.clock);
+    if (currentErrorSound) {
+        currentErrorSound.pause();
+        currentErrorSound.currentTime = 0;
+        currentErrorSound = null;
+    }
+    currentLevel = startingLevel;
+    score = 0;
+    updateScoreDisplay();
+    sanity = maxSanity;
+    updateSanityDisplay();
+    document.getElementById("game").style.display ="none";
+    document.getElementById("gameOverScreen").style.display ="none";
+    document.getElementById("victoryScreen").style.display = "none";
+    document.getElementById("taskOverlay").style.display = "none";
+    document.getElementById("hintOverlay").style.display = "none";
+    document.getElementById("timeOverlay").style.display = "none";
+    document.getElementById("exitMenuOverlay").style.display = "none";
+    document.getElementById("menu").style.display = "block";
+    playMusic(music.menu);
+    activeEquationRoom = null;
+    activeEquationType = null;
+    activeEquationData = null;
+    equationSuccessCallback = null;
+    equationFailCallback = null;
+    noSolutionSelected = false;
+}
+
+function transitionToLevel(nextLevel){
+    const fade = document.getElementById("fadeOverlay"
+        );
+    fade.style.pointerEvents = "auto";
+    // Oscurecer
+    fade.style.opacity = "1";
+    stopGlitching();
+    setTimeout(function(){
+        recoverSanity(sanityRecoveryPerLevel);
+        loadLevel(nextLevel);
+        if (sanity == 1) {startGlitching();}
+        // Aclarar
+        fade.style.opacity = "0";
+        setTimeout(function(){fade.style.pointerEvents ="none";
+        },2500);
+    },2500);
+}
+
+function transitionToGame(){
+    const fade = document.getElementById("fadeOverlay");
+    fade.style.pointerEvents = "auto";
+    // Comenzar completamente transparente
+    fade.style.opacity = "0";
+    // Forzar el renderizado antes de iniciar la transición
+    requestAnimationFrame(() => {
+        fade.style.opacity = "1";
+        // Esperar a que termine de oscurecer
+        setTimeout(function(){
+            startGame();
+            // Volver a aclarar
+            fade.style.opacity = "0";
+            setTimeout(function(){
+                fade.style.pointerEvents = "none";
+            },2500);
+        },2500);
+    });
+}
+
+function triggerGlitch(){
+    playSound(sfx.glitch);
+    const overlay = document.getElementById("glitchOverlay");
+    overlay.style.opacity = "0.55";
+    overlay.style.backgroundPosition = Math.random()*500 + "px " + Math.random()*500 + "px";
+    scene.style.transform = "translate(" + (Math.random()*14-7) + "px," + (Math.random()*8-4) + "px)";
+    scene.style.filter = "contrast(1.5) brightness(1.2) saturate(2)";
+    setTimeout(function(){
+        overlay.style.opacity="0";
+        scene.style.transform="";
+        scene.style.filter="";
+    },150);
+}
+
+function startGlitching(){
+    if(glitchInterval)
+        return;
+    function nextGlitch(){
+        triggerGlitch();
+        glitchInterval = setTimeout( nextGlitch, 1000 + Math.random()*1000
+        );
+    }
+    glitchInterval = setTimeout(nextGlitch, 1000 + Math.random()*1000
+    );
+}
+
+function stopGlitching(){clearTimeout(glitchInterval); glitchInterval = null;
+}
+
+document.getElementById("up").onclick = ()=>tryMove("up");
+document.getElementById("down").onclick = ()=>tryMove("down");
+document.getElementById("left").onclick = ()=>tryMove("left");
+document.getElementById("right").onclick = ()=>tryMove("right");
+document.getElementById("clockObject").onclick = function(event){
+    event.stopPropagation();
+    updateClockDisplay();
+    document.getElementById("timeOverlay").style.display = "flex";    
+    sfx.clock.currentTime=0;
+    sfx.clock.play();
+};
+
+document.getElementById("timeOverlay").onclick = function(){this.style.display = "none";
+    stopSound(sfx.clock);
+};
+
+document.getElementById("retryButton").onclick = returnToMenu;
+
+document.getElementById("startButton").onclick = transitionToGame;
+
+document.getElementById("chestObject").onclick=function(event){
+    playSound(sfx.chestOpen);
+    event.stopPropagation();
+    openEquation(currentRoom,"chest",
+        function(){
+            rooms[currentRoom].chestCompleted=true;
+            addScore(
+                Number(
+                    rooms[currentRoom].difficulty
+                )
+            );
+            showMessage("Tarea exitosa"
+            );
+            updateArrows();
+        },
+        function(){
+            showMessage("Te equivocaste"
+            );
+        }
+    );
+};
+
+document.getElementById("stairsObject").onclick = function(event){
+    event.stopPropagation();
+    const room = rooms[currentRoom];
+    if (room.exitUnlocked) {
+        showExitMenu();
+        return;
+    }
+    openEquation(
+        currentRoom,
+        "exit",
+        function(){
+            room.exitUnlocked = true;
+            addScore(
+                Number(room.difficulty),2
+            );
+            showMessage("Salida desbloqueada."
+            );
+        },
+        function(){
+            showMessage("Te equivocaste."
+            );
+        }
+    );
+};
+
+document.getElementById("taskOverlay").onclick = function(){
+    if (activeEquationType == "chest") {
+        playSound(sfx.chestClose);
+    }
+    this.style.display = "none";
+    activeChest = null;
+    document.getElementById("solution1").value = "";
+    document.getElementById("solution2").value = "";
+    noSolutionSelected = false;
+    document.getElementById("noSolutionButton").classList.remove("activeNoSolution");
+    document.getElementById("solution1").disabled = false;
+    document.getElementById("solution2").disabled = false;
+};
+
+document.getElementById("taskWindow").onclick = function(event){
+    event.stopPropagation();
+};
+
+document.getElementById("hintObject").onclick = function(event){
+    event.stopPropagation();
+    playSound(sfx.hint);
+    const room = rooms[currentRoom];
+    document.getElementById("hintPage").src =`pistas/pistaGrande${room.hintPage}.png`;
+    document.getElementById("hintOverlay").style.display = "flex";
+};
+
+document.getElementById("hintOverlay").onclick = function(){this.style.display = "none";
+};
+
+document.getElementById("noSolutionButton"
+)
+.onclick = function(){
+    noSolutionSelected = !noSolutionSelected;
+    const s1 = document.getElementById("solution1");
+    const s2 = document.getElementById("solution2");
+    if(noSolutionSelected){this.classList.add("activeNoSolution");
+        s1.value="";
+        s2.value="";
+        s1.disabled=true;
+        s2.disabled=true;
+    }
+    else{this.classList.remove("activeNoSolution");
+        s1.disabled=false;
+        s2.disabled=false;
+    }
+};
+
+document.getElementById("confirmEquationButton").onclick = function(){
+    if(checkEquationAnswer()){
+        if (activeEquationType == "chest") {
+            playSound(sfx.chestClose);
+        }
+        document.getElementById("taskOverlay").style.display="none";
+        if(equationSuccessCallback){
+            equationSuccessCallback();
+        }
+    }
+    else{
+        document.getElementById("taskOverlay").style.display="none";
+        playRandomErrorSound();
+        loseSanity();
+        if (equationFailCallback) {equationFailCallback();
+        }
+    }
+    activeEquationRoom=null;
+    activeEquationType=null;
+    activeEquationData = null;
+};
+
+document.getElementById("nextLevelButton").onclick=function(){
+    document.getElementById("exitMenuOverlay").style.display="none";
+    playSound(sfx.stairs);
+    transitionToLevel(currentLevel+1
+    );
+};
+
+document.getElementById("continueButton").onclick=function(){
+    document.getElementById("exitMenuOverlay").style.display="none";
+};
+
+document.getElementById("escapeButton").onclick = function(){
+    document.getElementById("exitMenuOverlay").style.display = "none";
+    victory();
+};
+
+document.getElementById("registerScoreButton").onclick = function() {
+    document.getElementById("finalScoreDisplay").textContent = score;
+    document.getElementById("playerNameInput").value = "";
+    document.getElementById("registerScoreOverlay").style.display = "flex";
+};
+
+document.getElementById("submitScoreButton").onclick = async function() {const nombre = document.getElementById("playerNameInput").value.trim();
+    if (nombre === "") {
+        alert("Ingresa tu nombre:");
+        return;
+    }
+    const nombreLimpio = nombre.substring(0, 10);
+    // Guardar en Supabase
+    const result = await saveScoreToLeaderboard(nombreLimpio, score);
+    if (result.success) {alert("¡Puntaje registrado correctamente!");
+    document.getElementById("registerScoreOverlay").style.display = "none";
+    } else {
+        alert("Error: " + result.message);
+    }
+};
+
+document.getElementById("cancelRegisterButton").onclick = function() {document.getElementById("registerScoreOverlay").style.display = "none";
+};
+
+document.getElementById("victoryButton").onclick = returnToMenu;
+
+document.getElementById("leaderboardButtonMenu").onclick = async function() {
+    document.getElementById("leaderboardOverlay").style.display = "flex";
+    // Obtener datos del leaderboard
+    const leaderboardData = await fetchLeaderboard();
+    const contentDiv = document.getElementById("leaderboardContent");
+    contentDiv.innerHTML = ""; // Limpiar
+    if (leaderboardData.length === 0) {
+        contentDiv.innerHTML = "<p style='text-align: center; color: #999;'>Aún no hay puntajes registrados</p>";
+        return;
+    }    
+    leaderboardData.forEach((entry, index) => {
+        const entryDiv = document.createElement("div");
+        entryDiv.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : '#f5f5f5'};
+            border-radius: 8px;
+            font-weight: ${index < 3 ? 'bold' : 'normal'};
+            font-size: 18px;
+        `;
+        const posicion = document.createElement("span");
+        posicion.textContent = `#${index + 1}`;
+        posicion.style.fontWeight = "bold";
+        const nombre = document.createElement("span");
+        nombre.textContent = entry.nombre;
+        nombre.style.flex = "1";
+        nombre.style.marginLeft = "15px";
+        const puntaje = document.createElement("span");
+        puntaje.textContent = entry.puntaje;
+        puntaje.style.fontWeight = "bold";
+        entryDiv.appendChild(posicion);
+        entryDiv.appendChild(nombre);
+        entryDiv.appendChild(puntaje);
+        contentDiv.appendChild(entryDiv);
+    });
+};
+
+document.getElementById("closeLeaderboardButton").onclick = function() {document.getElementById("leaderboardOverlay").style.display = "none";
+};
+
+document.getElementById("leaderboardOverlay").onclick = function(event) {
+    if (event.target === this) {this.style.display = "none";
+    }
+};
+
+document.getElementById("registerScoreOverlay").onclick = function(event) {
+    if (event.target === this) {document.getElementById("cancelRegisterButton").click();
+    }
+};
+
+document.getElementById("messageBox").textContent = "";
+
+document.getElementById("leaderboardButton").onclick = async function() {
+    document.getElementById("leaderboardOverlay").style.display = "flex";
+    // Obtener datos del leaderboard
+    const leaderboardData = await fetchLeaderboard();
+    const contentDiv = document.getElementById("leaderboardContent");
+    contentDiv.innerHTML = ""; // Limpiar
+    if (leaderboardData.length === 0) {
+        contentDiv.innerHTML = "<p style='text-align: center; color: #999;'>Aún no hay puntajes registrados</p>";
+        return;
+    }
+    leaderboardData.forEach((entry, index) => {
+        const entryDiv = document.createElement("div");
+        entryDiv.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : '#f5f5f5'};
+            border-radius: 8px;
+            font-weight: ${index < 3 ? 'bold' : 'normal'};
+            font-size: 18px;
+        `;
+        const posicion = document.createElement("span");
+        posicion.textContent = `#${index + 1}`;
+        posicion.style.fontWeight = "bold";
+        const nombre = document.createElement("span");
+        nombre.textContent = entry.nombre;
+        nombre.style.flex = "1";
+        nombre.style.marginLeft = "15px";
+        const puntaje = document.createElement("span");
+        puntaje.textContent = entry.puntaje;
+        puntaje.style.fontWeight = "bold";
+        entryDiv.appendChild(posicion);
+        entryDiv.appendChild(nombre);
+        entryDiv.appendChild(puntaje);
+        contentDiv.appendChild(entryDiv);
+    });
+};
+
+document.getElementById("closeLeaderboardButton").onclick = function() {document.getElementById("leaderboardOverlay").style.display = "none";
+};
+
+document.getElementById("leaderboardOverlay").onclick = function(event) {
+    if (event.target === this) {this.style.display = "none";
+    }
+};
+
+playMusic(music.menu);
+
+</script>
+</body>
+</html>
