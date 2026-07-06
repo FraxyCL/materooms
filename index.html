@@ -75,8 +75,6 @@ body{
   object-fit: contain; /* Ajusta la imagen completa dentro del navegador */
 }
 
-
-
 #startButton{
     position:absolute;
     left:50%;
@@ -436,6 +434,14 @@ body{
     background:
         url("imagenes/noise.png");
     mix-blend-mode:screen;
+}
+
+.exitUnlocked{
+    border:3px solid #00ff44;
+    border-radius:8px;
+    box-shadow:
+        0 0 10px #00ff44,
+        0 0 20px #00ff44;
 }
 
 </style>
@@ -808,11 +814,11 @@ B03n--02n--01nB
 `;
 const level2String = `
 XnBc1XnBn1XnBn1
-B06n--05S--04nB
-2n|nX2n|nX2p|nX
-Xn|n1Xn|c1Xr|n1
+B06nT-05S--04nB
+1n|tX2nBnX2pBnX
+Xn|n1XnBc1XrBn1
 B03n--02n--01nB
-1pBnX1nBnX1nBnI
+1pBnX1nBnX1nBnI 
 `;
 const level3String = `
 XnBc2XnBc2
@@ -825,13 +831,13 @@ Xn|n2Xr|n2
 B04n--03nB
 2p|nX2n|nX
 Xn|c2Xn|n2
-B02n--01SB
-1nBnI1nBnX
+B02nT-01SB
+1nBtI1nBnX
 `;
 const level4String = `
 XnBc3XnBn3XrBn3XnBc3XnBc3
 B30n--29S--28n--27nBB31nB
-3n|nX3nBnX1n|nX1nBnX1nBnX
+3n|nX2nBnX1n|nX1nBnX1nBnX
 Xn|c3XnBn3Xn|c3XnBc3XnBc3
 B26nBB31nBB25nBB31nBB31nB
 2n|nX1pBnX2n|nX1pBnX1pBnX
@@ -859,13 +865,16 @@ B31nBB04n--03n--01n--02nB
 `;
 //constantes
 const lastLevel = 4;
-const timeIncreasePerLevel = 40;
+// Activa el nivel secreto al completar los dos candados del nivel 4
+const secretLevelEnabled = true;
+let secretLevelActive = false;
+const timeIncreasePerLevel = 180;
 // comienza del 1 hacia adelante comenzar
 const startingLevel = 2;
 let currentLevel = startingLevel;
-const useQuadraticEquations = true;
+let scoreRegistered = false;
 //tiempo
-const startTime = 280;
+const startTime = 420;
 //cofres logo y reloj logo
 const totalChestImages = 2;
 const totalClockImages = 4;
@@ -877,14 +886,14 @@ const showSafeArea = false;
 // CORDURA
 const maxSanity = 5;
 // Cuánta cordura se recupera al pasar de nivel. Si vale 0, no se recupera nada.
-const sanityRecoveryPerLevel = 0;
+const sanityRecoveryPerLevel = 1;
 // AUDIO SONIDOS DE ERROR Cantidad de sonidos disponibles por nivel de cordura.
 const totalErrorSounds5 = 3;
 const totalErrorSounds4 = 3;
 const totalErrorSounds3 = 4;
 const totalErrorSounds2 = 5;
 // GAME OVER - Cantidad de pantallas disponibles por nivel
-const totalGameOverImages1 = 2;
+const totalGameOverImages1 = 1;
 const totalGameOverImages2 = 3;
 const totalGameOverImages3 = 2;
 const totalGameOverImages4 = 2;
@@ -1249,17 +1258,29 @@ function updateArrows(){
     const stairsObject = document.getElementById("stairsObject"
         );
     if (room.hasExit) {
-        stairsObject.style.display = "block";
-        stairsObject.src = `objetos/escalera${currentLevel}.png`;
-        stairsObject.style.left = stairsPositions[currentLevel].x + "%";
-        stairsObject.style.top = stairsPositions[currentLevel].y + "%";
-        stairsObject.style.width = stairsPositions[currentLevel].width + "px";
+    stairsObject.style.display = "block";
+    stairsObject.src = `objetos/escalera${currentLevel}.png`;
+    stairsObject.style.left = stairsPositions[currentLevel].x + "%";
+    stairsObject.style.top = stairsPositions[currentLevel].y + "%";
+    stairsObject.style.width = stairsPositions[currentLevel].width + "px";
+    if(room.exitUnlocked){
+        stairsObject.classList.add("exitUnlocked");
+    }else{
+        stairsObject.classList.remove("exitUnlocked");
     }
-    else {stairsObject.style.display = "none";
-    }
+}
+else{
+    stairsObject.style.display = "none";
+    stairsObject.classList.remove("exitUnlocked");
+}
 }
 
 function startGame(){
+    secretLevelActive = false;
+    scoreRegistered = false;
+    const registerButton = document.getElementById("registerScoreButton");
+    registerButton.style.display = "block";
+    registerButton.disabled = false;
     parseLevel(
     getCurrentLevelString());
     currentRoom = findStartRoom();
@@ -1372,6 +1393,7 @@ function victory(){
 }
 
 function loadLevel(level){
+    document.getElementById("messageBox").textContent = "";
     // Actualizar currentLevel PRIMERO
     currentLevel = level;
     // LUEGO parsear con el nivel correcto
@@ -1516,27 +1538,60 @@ function normalizeSolution(value){
     return value.trim().replace(/\s/g,"");
 }
 
+function parseMathValue(value){
+    value = value.trim().replace(/\s/g,"");
+    if(value === "")
+        return NaN;
+    // Si es una fracción (ej: 6/4)
+    if(value.includes("/")){
+        const partes = value.split("/");
+        if(partes.length !== 2)
+            return NaN;
+        const numerador = Number(partes[0]);
+        const denominador = Number(partes[1]);
+        if(isNaN(numerador) || isNaN(denominador) || denominador === 0)
+            return NaN;
+        return numerador / denominador;
+    }
+    // Decimal o entero
+    return Number(value);
+}
+
 function checkEquationAnswer(){
     const solutionString = activeEquationData.solutions;
-    if(solutionString==="NONE"){return noSolutionSelected;}
+    if(solutionString === "NONE"){
+        return noSolutionSelected;
+    }
     if(noSolutionSelected)
         return false;
-    const realSolutions = solutionString.split(",");
-    const a = normalizeSolution(document.getElementById("solution1").value
-        );
-    const b = normalizeSolution(document.getElementById("solution2").value
-        );
-    const s1 = normalizeSolution(realSolutions[0]
-        );
-    const s2 = normalizeSolution(realSolutions[1]
-        );
-    if(s1===s2){
-        return(
-            a===s1 || b===s1
+    const soluciones = solutionString.split(",");
+    const respuesta1 = parseMathValue(document.getElementById("solution1").value);
+    const respuesta2 = parseMathValue(document.getElementById("solution2").value);
+    const solucion1 = parseMathValue(soluciones[0]);
+    const solucion2 = parseMathValue(soluciones[1]);
+    const EPS = 0.000001;
+    function iguales(a,b){
+        return Math.abs(a-b) < EPS;
+    }
+    // Caso: raíz doble.
+    // Basta con escribirla en cualquiera de las dos casillas.
+    if(iguales(solucion1, solucion2)){
+        return (
+            (!isNaN(respuesta1) && iguales(respuesta1, solucion1)) || (!isNaN(respuesta2) && iguales(respuesta2, solucion1))
         );
     }
-    return(
-        (a===s1 && b===s2) || (a===s2 && b===s1)
+    // Para dos raíces distintas sí deben existir ambas respuestas.
+    if(isNaN(respuesta1) || isNaN(respuesta2)){
+        return false;
+    }
+    return (
+        (iguales(respuesta1, solucion1) && iguales(respuesta2, solucion2)) || (iguales(respuesta1, solucion2) && iguales(respuesta2, solucion1))
+    );
+}
+
+function secretLevelUnlocked(){
+    return (
+        rooms["22"] && rooms["23"] && rooms["22"].transitionUnlocked && rooms["23"].transitionUnlocked
     );
 }
 
@@ -1553,19 +1608,49 @@ function showExitMenu(){
         document.getElementById(
             "escapeButton"
         );
-    if(currentLevel==startingLevel){
-        next.style.display="block";
-        escape.style.display="none";
+    if (currentLevel < startingLevel) {
+    next.style.display = "none";
+    escape.style.display = "block";
     }
-    else if(currentLevel<lastLevel){
-        next.style.display="block";
-        escape.style.display="block";
+    else if (currentLevel == startingLevel) {
+        next.style.display = "block";
+        escape.style.display = "none";
     }
-    else{
-        next.style.display="none";
-        escape.style.display="block";
+    else if (currentLevel < lastLevel) {
+        next.style.display = "block";
+        escape.style.display = "block";
     }
-    overlay.style.display="flex";
+    else {
+        next.style.display = "none";
+        escape.style.display = "block";
+    }
+    // Si estamos en el último nivel y el nivel secreto está habilitado, mostrar el botón como "Nivel secreto"
+    if (secretLevelEnabled && currentLevel == lastLevel && !secretLevelActive && secretLevelUnlocked()
+    ) {
+        next.style.display = "block";
+        next.textContent = "Nivel secreto";
+        escape.style.display = "block";
+    }
+    else {
+        next.textContent = "Avanzar nivel";
+        if (currentLevel < startingLevel) {
+            next.style.display = "none";
+            escape.style.display = "block";
+        }
+        else if (currentLevel == startingLevel) {
+            next.style.display = "block";
+            escape.style.display = "none";
+        }
+        else if (currentLevel < lastLevel) {
+            next.style.display = "block";
+            escape.style.display = "block";
+        }
+        else {
+            next.style.display = "none";
+            escape.style.display = "block";
+        }
+    }
+    overlay.style.display = "flex";
 }
 
 //agregar nivel mapa
@@ -1694,6 +1779,11 @@ function stopSound(sound){
 }
 
 function returnToMenu(){
+    secretLevelActive = false;
+    scoreRegistered = false;
+    const registerButton = document.getElementById("registerScoreButton");
+    registerButton.style.display = "block";
+    registerButton.disabled = false;
     clearInterval(timerInterval);
     stopMusic();
     stopGlitching();
@@ -1737,7 +1827,12 @@ function transitionToLevel(nextLevel){
     stopGlitching();
     setTimeout(function(){
         recoverSanity(sanityRecoveryPerLevel);
-        loadLevel(nextLevel);
+        if (secretLevelActive) {
+            loadLevel(1);
+        }
+        else {
+            loadLevel(nextLevel);
+        }
         if (sanity == 1) {startGlitching();}
         // Aclarar
         fade.style.opacity = "0";
@@ -1850,10 +1945,9 @@ document.getElementById("stairsObject").onclick = function(event){
         function(){
             room.exitUnlocked = true;
             addScore(
-                Number(room.difficulty),2
-            );
-            showMessage("Salida desbloqueada."
-            );
+                Number(room.difficulty),2);
+            showMessage("Salida desbloqueada. Haz click nuevamente en la escalera");
+            updateArrows();
         },
         function(){
             showMessage("Te equivocaste."
@@ -1934,8 +2028,15 @@ document.getElementById("confirmEquationButton").onclick = function(){
 document.getElementById("nextLevelButton").onclick=function(){
     document.getElementById("exitMenuOverlay").style.display="none";
     playSound(sfx.stairs);
-    transitionToLevel(currentLevel+1
-    );
+    // Entrar al nivel secreto
+    if (secretLevelEnabled && currentLevel == lastLevel && !secretLevelActive &&
+        secretLevelUnlocked()
+    ) {
+        secretLevelActive = true;
+        transitionToLevel(1);
+        return;
+    }
+    transitionToLevel(currentLevel+1);
 };
 
 document.getElementById("continueButton").onclick=function(){
@@ -1948,6 +2049,9 @@ document.getElementById("escapeButton").onclick = function(){
 };
 
 document.getElementById("registerScoreButton").onclick = function() {
+    if(scoreRegistered){
+        return;
+    }
     document.getElementById("finalScoreDisplay").textContent = score;
     document.getElementById("playerNameInput").value = "";
     document.getElementById("registerScoreOverlay").style.display = "flex";
@@ -1961,9 +2065,14 @@ document.getElementById("submitScoreButton").onclick = async function() {const n
     const nombreLimpio = nombre.substring(0, 10);
     // Guardar en Supabase
     const result = await saveScoreToLeaderboard(nombreLimpio, score);
-    if (result.success) {alert("¡Puntaje registrado correctamente!");
+    if (result.success) {
+    scoreRegistered = true;
+    alert("¡Puntaje registrado correctamente!");
     document.getElementById("registerScoreOverlay").style.display = "none";
-    } else {
+    const registerButton = document.getElementById("registerScoreButton");
+    registerButton.style.display = "none";
+}
+    else {
         alert("Error: " + result.message);
     }
 };
